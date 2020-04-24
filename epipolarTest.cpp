@@ -1,47 +1,33 @@
 #include <opencv2/opencv.hpp>
- 
+
 int main(void)
 {
-	// 映像を取り込むためのオブジェクトを宣言する
-	cv::VideoCapture cap;
-	cap.open(0);			// カメラ番号を指定する（通常は0）
+	cv::Mat img_left, dist_left, img_right, dist_right;
  
-	// カメラに接続できたか調べる
-	if (cap.isOpened() == false) {
-		printf("カメラに接続できません。\n");
-		return -1;
-	}
+	img_left = cv::imread("../img/left.jpg");
+	img_right = cv::imread("../img/right.jpg");	
+ 
+	// 特徴点検出アルゴリズムの選択
+	cv::Ptr<cv::ORB> orb = cv::ORB::create(500, 1.2f, 2);
 	
-	int    width, height;
-	double fps;
-	width  = (int)cap.get(cv::CAP_PROP_FRAME_WIDTH);	// フレーム横幅を取得
-	height = (int)cap.get(cv::CAP_PROP_FRAME_HEIGHT);	// フレーム縦幅を取得
-	fps    = cap.get(cv::CAP_PROP_FPS);	// フレームレートを取得（取得できないカメラもある）
+	// 検出したキーポイント（特徴点）を格納する配列
+	// std::vector<cv::KeyPoint> keyAkaze, key_left, keySurf;
+	std::vector<cv::KeyPoint> key_left, key_right;
+	cv::Mat des_left, des_right; //特徴量
+
+	// キーポイント検出
+	// akaze->detectAndCompute(img_left, cv::noArray(), keyAkaze);
+	orb->detectAndCompute(img_left , cv::noArray(), key_left , des_left );
+	orb->detectAndCompute(img_right, cv::noArray(), key_right, des_right);
  
-	printf("画像サイズ %dx%d, %ffps\n", width, height, fps);
+	// 画像上にキーポイントの場所を描く
+	// # DrawMatchesFlags::DRAW_RICH_KEYPOINTS  キーポイントのサイズと方向を描く
+	cv::drawKeypoints(img_left , key_left , dist_left , cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
+	cv::drawKeypoints(img_right, key_right, dist_right, cv::Scalar::all(-1), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS);
  
-	// 画像を格納するオブジェクトを宣言する
-	cv::Mat frame;
+	cv::imshow("left" , dist_left );
+	cv::imshow("right", dist_right);
  
-	for (;;) {
-		// 1フレームを取り込む
-		cap >> frame;
- 
-		// 画像から空のとき、無限ループを抜ける
-		if (frame.empty() == true) {
-			break;
-		}
- 
-		// ウィンドウに画像を表示する
-		cv::imshow("入力中", frame);
- 
-		// 33ms待つ
-		int key = cv::waitKey(33);
-		if (key == 0x1b) {
-			// ESCキーが押されたら終了する
-			break;
-		}
-	}
- 
+	cv::waitKey(0);
 	return 0;
 }
