@@ -3,12 +3,12 @@
 #include <typeinfo>
 
 void drawEpilines(cv::Mat img1
-				, cv::Mat img2
-				, std::vector<cv::Vec3f> lines
-				, std::vector<cv::Point2f> pts1
-				, std::vector<cv::Point2f> pts2
-				, cv::Mat& img3
-				, cv::Mat& img4)
+		, cv::Mat img2
+		, std::vector<cv::Vec3f> lines
+		, std::vector<cv::Point2f> pts1
+		, std::vector<cv::Point2f> pts2
+		, cv::Mat& img3
+		, cv::Mat& img4)
 {
 	cv::cvtColor(img1, img3, cv::COLOR_GRAY2BGR);
 	cv::cvtColor(img2, img4, cv::COLOR_GRAY2BGR);
@@ -48,35 +48,35 @@ int main(void)
 	cv::FlannBasedMatcher matcher = cv::FlannBasedMatcher(cv::makePtr<cv::flann::LshIndexParams>(12, 20, 2));
 	// std::vector< cv::DMatch > matches;
 	// matcher.match( des_left, des_right, matches, 2);
-    // cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
-    std::vector< std::vector<cv::DMatch> > matches;
-    matcher.knnMatch( des_left, des_right, matches, 2);
+	// cv::Ptr<cv::DescriptorMatcher> matcher = cv::DescriptorMatcher::create(cv::DescriptorMatcher::FLANNBASED);
+	std::vector< std::vector<cv::DMatch> > matches;
+	matcher.knnMatch( des_left, des_right, matches, 2);
 
 	std::cout << "match done." << std::endl;
 	std::cout << "size " << matches.size() << std::endl;
 
-    //-- Filter matches using the Lowe's ratio test
-    const float ratio_thresh = 0.75f;
-    std::vector<cv::DMatch> good_matches;
+	//-- Filter matches using the Lowe's ratio test
+	const float ratio_thresh = 0.75f;
+	std::vector<cv::DMatch> good_matches;
 	std::vector<cv::Point2f> pts_left, pts_right;
 
-    for (size_t i = 0; i < matches.size(); i++)
-    {
-        if ( !matches[i].empty() && matches[i][0].distance < ratio_thresh * matches[i][1].distance)
-        {
+	for (size_t i = 0; i < matches.size(); i++)
+	{
+        	if ( !matches[i].empty() && matches[i][0].distance < ratio_thresh * matches[i][1].distance)
+        	{
 			std::cout << i << " dist " << matches[i][0].distance << "/" << ratio_thresh * matches[i][1].distance << std::endl;
 			good_matches.push_back(matches[i][0]);
 			pts_right.push_back(key_right[matches[i][0].trainIdx].pt);
 			pts_left.push_back(key_left[matches[i][0].queryIdx].pt);
-        }
-    }
+        	}
+    	}
 
 	std::vector<uchar> mask;
 	std::vector<cv::Point2f> good_pts_left, good_pts_right;
 
 	cv::Mat fundamental_matrix = cv::findFundamentalMat(pts_left, pts_right, mask, cv::FM_LMEDS);
-    for (size_t i = 0; i < mask.size(); i++)
-    {
+	for (size_t i = 0; i < mask.size(); i++)
+	{
 		if(mask[i] == 1)
 		{
 			good_pts_left.push_back(pts_left[i]);
